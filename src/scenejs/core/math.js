@@ -1401,8 +1401,8 @@ SceneJS._math_MIN_DOUBLE = Number.MIN_VALUE;
  *
  */
 SceneJS._math_Box3 = function(min, max) {
-    this.min = min || [ Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE ];
-    this.max = max || [ Number.Min_VALUE, Number.Min_VALUE, Number.Min_VALUE ];
+    this.min = min || [ SceneJS._math_MAX_DOUBLE,SceneJS._math_MAX_DOUBLE,SceneJS._math_MAX_DOUBLE ];
+    this.max = max || [ SceneJS._math_MIN_DOUBLE,SceneJS._math_MIN_DOUBLE,SceneJS._math_MIN_DOUBLE ];
 
     /** @private */
     this.init = function(min, max) {
@@ -1419,7 +1419,7 @@ SceneJS._math_Box3 = function(min, max) {
     this.fromPoints = function(points) {
         var pointsLength = points.length;
     
-        for (var i = 0; i < pointsLength; ++i) {
+        for (i = 0; i < pointsLength; ++i) {
             var points_i3 = points[i][3];
             var pDiv0 = points[i][0] / points_i3;
             var pDiv1 = points[i][1] / points_i3;
