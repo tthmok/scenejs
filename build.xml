@@ -85,12 +85,15 @@
         <fileset dir="${SRC_DIR}" includes="scenejs/renderer/rendererConfigModule.js"/>
         <fileset dir="${SRC_DIR}" includes="scenejs/renderer/renderer.js"/>
 
+        <fileset dir="${SRC_DIR}" includes="scenejs/flags/flagsModule.js"/>
+        <fileset dir="${SRC_DIR}" includes="scenejs/flags/flags.js"/>
+
         <fileset dir="${SRC_DIR}" includes="scenejs/geometry/geometryModule.js"/>
         <fileset dir="${SRC_DIR}" includes="scenejs/geometry/geometry.js"/>
         <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/teapot.js"/>
-        <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/cube.js"/>
+        <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/box.js"/>
         <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/sphere.js"/>
-        <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/rectangle.js"/>
+        <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/quad.js"/>
 
         <fileset dir="${SRC_DIR}" includes="scenejs/text/vectorTextModule.js"/>
         <fileset dir="${SRC_DIR}" includes="scenejs/text/bitmapTextModule.js"/>
@@ -119,6 +122,9 @@
 
         <fileset dir="${SRC_DIR}" includes="scenejs/material/materialModule.js"/>
         <fileset dir="${SRC_DIR}" includes="scenejs/material/material.js"/>
+
+        <fileset dir="${SRC_DIR}" includes="scenejs/colortrans/colortrans.js"/>
+        <fileset dir="${SRC_DIR}" includes="scenejs/colortrans/colortransModule.js"/>
 
         <fileset dir="${SRC_DIR}" includes="scenejs/interpolation/interpolator.js"/>
 
@@ -205,8 +211,9 @@
             <fileset dir="${SRC_DIR}" includes="scenejs/geometry/geometryModule.js"/>
             <fileset dir="${SRC_DIR}" includes="scenejs/geometry/geometry.js"/>
             <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/teapot.js"/>
-            <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/cube.js"/>
+            <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/box.js"/>
             <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/sphere.js"/>
+            <fileset dir="${SRC_DIR}" includes="scenejs/geometry/objects/quad.js"/>
 
             <fileset dir="${SRC_DIR}" includes="scenejs/text/vectorTextModule.js"/>
             <fileset dir="${SRC_DIR}" includes="scenejs/text/bitmapTextModule.js"/>
@@ -235,6 +242,9 @@
 
             <fileset dir="${SRC_DIR}" includes="scenejs/material/materialModule.js"/>
             <fileset dir="${SRC_DIR}" includes="scenejs/material/material.js"/>
+
+            <fileset dir="${SRC_DIR}" includes="scenejs/colortrans/colortrans.js"/>
+            <fileset dir="${SRC_DIR}" includes="scenejs/colortrans/colortransModule.js"/>
 
             <fileset dir="${SRC_DIR}" includes="scenejs/highlight/highlightModule.js"/>
             <fileset dir="${SRC_DIR}" includes="scenejs/highlight/highlight.js"/>

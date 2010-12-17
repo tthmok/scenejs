@@ -31,9 +31,11 @@ SceneJS._shaderModule = new (function() {
 
     /* Currently exported states
      */
+    var flagsState;
     var rendererState;
     var lightState;
     var boundaryState;
+    var colortransState;
     var materialState;
     var fogState;
     var texState;
@@ -126,6 +128,10 @@ SceneJS._shaderModule = new (function() {
                 /* Prepare initial default state soup
                  */
                 nextStateId = 0;
+                flagsState = {
+                    flags: {},
+                    hash: ""
+                };
                 rendererState = {
                     props: {},
                     hash: ""
@@ -135,6 +141,12 @@ SceneJS._shaderModule = new (function() {
                     hash: ""
                 };
                 boundaryState = null;
+                colortransState = {
+                    _stateId : nextStateId++,
+                    trans: {
+                    },
+                    hash: ""
+                };
                 materialState = {
                     material: {
                         _stateId : nextStateId++,
@@ -144,8 +156,7 @@ SceneJS._shaderModule = new (function() {
                         shine : 1,
                         reflect : 0,
                         alpha : 1.0,
-                        emit : 0.7,
-                        opacity: 1.0
+                        emit : 0.7
                     },
                     hash: ""
                 };
@@ -184,6 +195,17 @@ SceneJS._shaderModule = new (function() {
         };
     }
 
+    /**
+     *
+     */
+    this.setFlags = function(flags) {
+        flagsState = {
+            _stateId : nextStateId++,
+            flags: flags
+        };
+        // Note we don't force stateHash compute
+    };
+
 
     /* Import GL flags state
      */
@@ -197,6 +219,7 @@ SceneJS._shaderModule = new (function() {
                 };
                 stateHash = null;
             });
+
 
     /* When texture state exported, add it to the state soup
      * and make hash identity for its GLSL fragment.
@@ -284,6 +307,23 @@ SceneJS._shaderModule = new (function() {
                 stateHash = null;
             });
 
+    /**
+     * When color transform set, add it to the state soup
+     */
+    this.setColortrans = function(trans) {
+
+        /* Add colortrans to state soup.
+         */
+        colortransState = {
+            _stateId : nextStateId++,
+            trans:      trans,
+            hash: trans ? "t" : "f"
+        };
+
+        stateHash = null;
+    };
+
+
     /* When material state exported, add it to the state soup. We don't need
      * a GLSL hash for material since our GLSL happens to be generic for
      * material attributes.
@@ -301,8 +341,7 @@ SceneJS._shaderModule = new (function() {
                         shine : material.shine != undefined ? material.shine : 0.5,
                         reflect : material.reflect != undefined ? material.reflect : 0,
                         alpha : material.alpha != undefined ? material.alpha : 1.0,
-                        emit : material.emit != undefined ? material.emit : 0.0,
-                        opacity : material.opacity != undefined ? material.opacity : 1.0
+                        emit : material.emit != undefined ? material.emit : 0.0
                     },
                     hash: ""
                 };
@@ -507,8 +546,10 @@ SceneJS._shaderModule = new (function() {
              */
             boundaryState: boundaryState,
             geoState: geoState,
+            flagsState: flagsState,
             rendererState: rendererState,
             lightState: lightState,
+            colortransState : colortransState,
             materialState: materialState,
             fogState : fogState,
             modelXFormState: modelXFormState,
@@ -581,8 +622,8 @@ SceneJS._shaderModule = new (function() {
     function renderOpaqueNodes(opaqueNodes) {
         //NodeRenderer.init();
         var context = canvas.context;
-        context.blendFunc(context.SRC_ALPHA, context.LESS);
-        context.disable(context.BLEND);
+        //        context.blendFunc(context.SRC_ALPHA, context.LESS);
+        //        context.disable(context.BLEND);
         for (var i = 0, len = opaqueNodes.length; i < len; i++) {
             NodeRenderer.renderNode(opaqueNodes[i]);
         }
@@ -603,7 +644,7 @@ SceneJS._shaderModule = new (function() {
         for (var i = 0, len = transpNodes.length; i < len; i++) {
             NodeRenderer.renderNode(transpNodes[i]);
         }
-        context.blendFunc(context.SRC_ALPHA, context.LESS);
+        /// context.blendFunc(context.SRC_ALPHA, context.LESS);
         context.disable(context.BLEND);
         //NodeRenderer.cleanup();
     }
@@ -671,6 +712,7 @@ SceneJS._shaderModule = new (function() {
                 this._program = node.program.program;
                 this._program.bind();
 
+                this._lastFlagsStateId = -1;
                 this._lastGeoStateId = -1;
                 this._lastLightStateId = -1;
                 this._lastClipStateId = -1;
@@ -684,6 +726,15 @@ SceneJS._shaderModule = new (function() {
                 this._lastFogStateId = -1;
 
                 this._lastProgramId = node.program.id;
+            }
+
+            /*
+             */
+            if (! node._lastFlagsState || node.flagsState._stateId != this._lastFlagsState._stateId) {
+
+                /*
+                 */
+                this._lastFlagsState = node.flagsState;
             }
 
             /* Bind image buffer so that subsequently rendered geometry is drawn to it
@@ -771,25 +822,33 @@ SceneJS._shaderModule = new (function() {
              */
             if (node.fogState && node.fogState.fog && node.fogState._stateId != this._lastFogStateId) {
                 var fog = node.fogState.fog;
-                if (node.rendererState.props.props.enableFog === false
-                        || fog.mode == "disabled") {
+                if (node.flagsState.flags.fog === false || fog.mode == "disabled") {
 
                     // When fog is disabled, don't bother loading any of its parameters
                     // because they will be ignored by the shader
 
                     this._program.setUniform("uFogMode", 0.0);
                 } else {
-                    if (fog.mode == "linear") {
-                        this._program.setUniform("uFogMode", 1.0);
-                    } else if (fog.mode == "exp") {
-                        this._program.setUniform("uFogMode", 2.0);
+
+                    if (fog.mode == "constant") {
+                        this._program.setUniform("uFogMode", 4.0);
+                        this._program.setUniform("uFogColor", fog.color);
+                        this._program.setUniform("uFogDensity", fog.density);
+
                     } else {
-                        this._program.setUniform("uFogMode", 3.0); // mode is "exp2"
+
+                        if (fog.mode == "linear") {
+                            this._program.setUniform("uFogMode", 1.0);
+                        } else if (fog.mode == "exp") {
+                            this._program.setUniform("uFogMode", 2.0);
+                        } else if (fog.mode == "exp2") {
+                            this._program.setUniform("uFogMode", 3.0); // mode is "exp2"
+                        }
+                        this._program.setUniform("uFogColor", fog.color);
+                        this._program.setUniform("uFogDensity", fog.density);
+                        this._program.setUniform("uFogStart", fog.start);
+                        this._program.setUniform("uFogEnd", fog.end);
                     }
-                    this._program.setUniform("uFogColor", fog.color);
-                    this._program.setUniform("uFogDensity", fog.density);
-                    this._program.setUniform("uFogStart", fog.start);
-                    this._program.setUniform("uFogEnd", fog.end);
                 }
                 this._lastFogStateId = node.fogState._stateId;
             }
@@ -879,6 +938,21 @@ SceneJS._shaderModule = new (function() {
 
             /*
              */
+            if (node.colortransState && node.colortransState.trans && node.colortransState != this._lastColortransStateId) {
+
+                /* Bind colortrans
+                 */
+                var trans = node.colortransState.trans;
+                var scale = trans.scale;
+                var add = trans.add;
+                this._program.setUniform("uColortransScale", [scale.r, scale.g, scale.b, scale.a]);  // Scale
+                this._program.setUniform("uColortransAdd", [add.r, add.g, add.b, add.a]);  // Scale
+                this._program.setUniform("uColortransSaturation", trans.saturation);  // Saturation
+                this._lastColortransStateId = node.colortransState._stateId;
+            }
+
+            /*
+             */
             if (node.materialState && node.materialState != this._lastMaterialStateId) {
 
                 /* Bind Material
@@ -897,7 +971,7 @@ SceneJS._shaderModule = new (function() {
                  * material state change for the next node, otherwise otherwise the highlight
                  * may linger in the shader uniform if there is no material state change for the next node.
                  */
-                if (node.rendererState && node.rendererState.props.props.highlight) {
+                if (node.flagsState && node.flagsState.flags.highlight) {
                     this._program.setUniform("uMaterialBaseColor", material.highlightBaseColor);
                     this._lastMaterialStateId = null;
                 }
@@ -934,12 +1008,12 @@ SceneJS._shaderModule = new (function() {
          */
         this.cleanup = function() {
             canvas.context.flush();
-            if (this._lastRendererState) {
-                this._lastRendererState.props.restoreProps(canvas.context);
-            }
-            if (this._program) {
-                this._program.unbind();
-            }
+            //            if (this._lastRendererState) {
+            //                this._lastRendererState.props.restoreProps(canvas.context);
+            //            }
+            //            if (this._program) {
+            //                this._program.unbind();
+            //            }
         };
     })();
 
@@ -1226,6 +1300,7 @@ SceneJS._shaderModule = new (function() {
         var lighting = lightState && lightState.lights.length > 0 && geoState && geoState.geo.normalBuf;
         var fogging = fogState.fog && true;
         var clipping = clipState && clipState.clips.length > 0;
+        var colortrans = colortransState && colortransState.trans;
 
         var src = ["\n"];
 
@@ -1298,6 +1373,7 @@ SceneJS._shaderModule = new (function() {
             }
         }
 
+
         /* Fog uniforms
          */
         if (fogging) {
@@ -1306,6 +1382,12 @@ SceneJS._shaderModule = new (function() {
             src.push("uniform float uFogDensity;");
             src.push("uniform float uFogStart;");
             src.push("uniform float uFogEnd;");
+        }
+
+        if (colortrans) {
+            src.push("uniform vec4   uColortransAdd;");
+            src.push("uniform vec4   uColortransScale;");
+            src.push("uniform float  uColortransSaturation;");
         }
 
         //--------------------------------------------------------------------------
@@ -1505,28 +1587,41 @@ SceneJS._shaderModule = new (function() {
         /* Fog
          */
         if (fogging) {
-            src.push("    if (uFogMode != 0.0) {");          // not "disabled"
-            src.push("        float fogFact=1.0;");
-            src.push("        if (uFogEnd != uFogStart) {"); // fog is a fixed amount when start == end 
-            src.push("            if (uFogMode == 1.0) {");  // "linear"
-            src.push("                fogFact=clamp(pow(max((uFogEnd - length(-vViewVertex.xyz)) / (uFogEnd - uFogStart), 0.0), 2.0), 0.0, 1.0);");
-            src.push("            } else {");                // "exp" or "exp2"
-            src.push("                fogFact=clamp((uFogEnd - length(-vViewVertex.xyz)) / (uFogEnd - uFogStart), 0.0, 1.0);");
-            src.push("            }");
-            src.push("        } else { fogFact = 0.3; }");
-            src.push("        gl_FragColor = fragColor * fogFact + vec4(uFogColor, 1) * (1.0 - fogFact);");
-            src.push("    } else {");
-
-            // Fog disabled, either by "disabled" mode on fog node, or by enableFog == false on renderer node
-
-            src.push("        gl_FragColor = fragColor;");
+            src.push("if (uFogMode != 0.0) {");          // not "disabled"
+            src.push("    float fogFact = (1.0 - uFogDensity);");
+            src.push("    if (uFogMode != 4.0) {");      // not "constant"
+            src.push("       if (uFogMode == 1.0) {");  // "linear"
+            src.push("          fogFact *= clamp(pow(max((uFogEnd - length(-vViewVertex.xyz)) / (uFogEnd - uFogStart), 0.0), 2.0), 0.0, 1.0);");
+            src.push("       } else {");                // "exp" or "exp2"
+            src.push("          fogFact *= clamp((uFogEnd - length(-vViewVertex.xyz)) / (uFogEnd - uFogStart), 0.0, 1.0);");
+            src.push("       }");
             src.push("    }");
-        } else {
-            src.push("    gl_FragColor = fragColor;");
+            src.push("    fragColor = fragColor * (fogFact + vec4(uFogColor, 1)) * (1.0 - fogFact);");
+            src.push("}");
+
+        }
+
+        /* Color transformations
+         */
+        if (colortrans) {
+
+            /* Desaturate
+             */
+            src.push("        if (uColortransSaturation < 0.0) {");
+            src.push("            float intensity = 0.3 * fragColor.r + 0.59 * fragColor.g + 0.11 * fragColor.b;");
+            src.push("            fragColor = vec4((intensity * -uColortransSaturation) + fragColor.rgb * (1.0 + uColortransSaturation), 1.0);");
+            src.push("        }");
+
+            /* Scale/add
+             */
+            src.push("        fragColor = (fragColor * uColortransScale) + uColortransAdd;");
+
         }
 
         if (debugCfg.whitewash == true) {
             src.push("    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);");
+        } else {
+            src.push("    gl_FragColor = fragColor;");
         }
 
         src.push("}");
