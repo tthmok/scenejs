@@ -17,9 +17,34 @@ SceneJS.Text.prototype._init = function(params) {
                 "SceneJS.Text unsupported mode - should be 'vector' or 'bitmap'"));
     }
     this._mode = mode;
-    if (this._mode == "bitmap") {
-        var text = this.setText(params);
-        
+
+    if (this._mode === "bitmap") {
+		// Save initial parameters to be reused when setText is called at runtime
+		this.font = params.font || "Helvetica";
+		this.size = params.size || 1;
+		this.color = params.color || [1,1,1,1];
+		this.text = params.text || "";
+		
+		// Keep track of subnodes so they can be updated if text is changed
+		this.matId = this._id + "-Text_material";
+		this.geoId = this._id + "-Text_geometry";
+		
+        this.addNode({
+            type: "material",
+			id: this.matId,
+            emit: 0,
+            baseColor:      { r: 0.0, g: 0.0, b: 0.0 },
+            specularColor:  { r: 0.9, g: 0.9, b: 0.9 },
+            specular:       0.9,
+            shine:          100.0
+        });
+		
+		this.setText({
+			font: this.font,
+			size: this.size,
+			color: this.color,
+			text: this.text
+		});
     } else {
         this.addNode({
             type: "geometry",
@@ -39,51 +64,63 @@ SceneJS.Text.prototype._init = function(params) {
     }
 };
 
-SceneJS.Text.prototype.getGeoId = function () {
-    return this.geoId;
-}
-
+/* <p>Updates the geometry sub-node of Text node. The geometry node is removed
+ * and then re-added with new values since we cannot update a geometries vertices directly</p>
+ * @param {float} width
+ * @param {float} height
+ * @param {Object} params 
+ */
 SceneJS.Text.prototype._updateGeometry = function (width, height, params) {
-    var w = width / 16;
-    var h = height / 16;
+	var w = width / 16;
+	var h = height / 16;
 
-    var positions = [ w, h, 0.01, 0, h, 0.1, 0,0, 0.1, w,0, 0.01 ];
-    var normals = [ 0, 0, -1,  0, 0, -1,  0, 0, -1,  0, 0, -1 ];
-    var uv = [1, 1,  0, 1,  0, 0, 1, 0];
-    var indices = [0, 1, 2,  0, 2, 3];
+	var positions = [ w, h, 0.01, 0, h, 0.1, 0,0, 0.1, w,0, 0.01 ];
+	var normals = [ 0, 0, -1,  0, 0, -1,  0, 0, -1,  0, 0, -1 ];
+	var uv = [1, 1,  0, 1,  0, 0, 1, 0];
+	var indices = [0, 1, 2,  0, 2, 3];
 
-    if (params.doubleSided) {
-        var z = 0.01;
-        positions = positions.concat([w,0,-z, 0,0,-z, 0, h,-z, w, h,-z]);
-        normals = normals.concat([0, 0,1, 0, 0,1, 0, 0,1,  0, 0,1]);
-        uv = uv.concat([0, 0, 1, 0, 1, 1, 0, 1]);
-        indices = indices.concat([4,5,6, 4,6,7]);
-    }
-    
-    if (SceneJS.nodeExists(this.geoId))
-    {
-        this.removeNode(this.geoId);
-    }
-
-    this.addNode(
-       {
-            type: "geometry",
-            id: this.geoId, 
-            primitive: "triangles",
-            positions : positions,
-            normals : normals,
-            uv : uv,
-            indices : indices
-        }
-    );
-};
-
-
+	if (params.doubleSided) {
+		var z = 0.01;
+		positions = positions.concat([w,0,-z, 0,0,-z, 0, h,-z, w, h,-z]);
+		normals = normals.concat([0, 0,1, 0, 0,1, 0, 0,1,  0, 0,1]);
+		uv = uv.concat([0, 0, 1, 0, 1, 1, 0, 1]);
+		indices = indices.concat([4,5,6, 4,6,7]);
+	}
+	
+	var thisMatNode = SceneJS.withNode(this.matId);
+	
+	// We must remove existing geometry node
+	if (thisMatNode.hasNode(this.geoId)) {
+		thisMatNode.remove({
+			nodes: [this.geoId]
+		});
+	}	
+	
+	thisMatNode.add("node", 
+		{
+			type: "geometry",
+			id: this.geoId,
+			primitive: "triangles",
+			positions : positions,
+			normals : normals,
+			uv : uv,
+			indices : indices
+		}
+	);
+	
+	SceneJS._needFrame = true;
+}
 
 SceneJS.Text.prototype.setText = function (params) {
     var text;
-    if (this._mode == "bitmap") {
-        text = SceneJS._bitmapTextModule.createText(params.font || this.font, params.size || this.size, params.color || this.color, params.text || this.text);
+    if (this._mode === "bitmap") {
+		// Save new parameters to be reused when setText is called next
+		this.font = params.font || this.font;
+		this.size = params.size || this.size;
+		this.color = params.color || this.color;
+		this.text = params.text || this.text;
+	
+        text = SceneJS._bitmapTextModule.createText(params.font || this.font, params.size || this.size, params.text || this.text, params.color || this.color);
         this._layer = {
             creationParams: {
                 image: text.image,

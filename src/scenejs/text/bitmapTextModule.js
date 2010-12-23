@@ -3,7 +3,6 @@
  */
 SceneJS._bitmapTextModule = new (function() {
 
-
     SceneJS._eventModule.addListener(
             SceneJS._eventModule.INIT,
             function() {
@@ -11,22 +10,20 @@ SceneJS._bitmapTextModule = new (function() {
             });
 
     function getHTMLColor(color) {
-        var htmlColor = [];
+		var htmlColor = [];
         if (color.length != 4) {
             return color;
         }
-        for (var i = 0; i < color.length; i++) {
-            // We don't want to alter the alpha value by 255
-            if (i !== 3) {
-                htmlColor[i] = color[i]*255;
-            } else {
-                htmlColor[i] = color[i];
-            }
+        for (var i = 0; i < color.length-1; i++) {
+            htmlColor[i] = color[i]*255;
         }
+		// alpha value should be 0 to 1, not multiplied by 255
+		htmlColor[3] = color[3];
+		
         return 'rgba(' + htmlColor.join(',') + ')';
     }
 
-    this.createText = function(font, size, color, text) {
+    this.createText = function(font, size, text, color) {
         var canvas = document.createElement("canvas");
         var cx = canvas.getContext('2d');
 
@@ -43,7 +40,7 @@ SceneJS._bitmapTextModule = new (function() {
         var x = 0;
         var y = (canvas.height / 2);
         cx.fillText(text, x, y);
-        
+		
         return {
             image: canvas,
             width: canvas.width,
