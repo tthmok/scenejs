@@ -23,17 +23,23 @@ SceneJS._bitmapTextModule = new (function() {
         return 'rgba(' + htmlColor.join(',') + ')';
     }
 
-    this.createText = function(font, size, text, color) {
+    this.createText = function(font, size, text, color, makeBold) {
         var canvas = document.createElement("canvas");
         var cx = canvas.getContext('2d');
 
-        cx.font = size + "px " + font;
+		var bold = "";
+		
+		if (makeBold) {
+			bold = "bold ";
+		}
+		
+        cx.font = bold + size + "px " + font;
 
         var width = cx.measureText(text).width;
         canvas.width = width;
         canvas.height = size*1.2;
 
-        cx.font = size + "px " + font;
+        cx.font = bold + size + "px " + font;
         cx.textBaseline = "middle";
         cx.fillStyle = getHTMLColor(color);
 

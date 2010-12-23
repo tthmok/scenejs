@@ -24,6 +24,7 @@ SceneJS.Text.prototype._init = function(params) {
 		this.size = params.size || 1;
 		this.color = params.color || [1,1,1,1];
 		this.text = params.text || "";
+		this.bold = params.bold || false;
 		
 		// Keep track of subnodes so they can be updated if text is changed
 		this.matId = this._id + "-Text_material";
@@ -119,8 +120,9 @@ SceneJS.Text.prototype.setText = function (params) {
 		this.size = params.size || this.size;
 		this.color = params.color || this.color;
 		this.text = params.text || this.text;
+		this.bold = params.bold || this.bold;
 	
-        text = SceneJS._bitmapTextModule.createText(params.font || this.font, params.size || this.size, params.text || this.text, params.color || this.color);
+        text = SceneJS._bitmapTextModule.createText(this.font,this.size, this.text, this.color, this.bold);
         this._layer = {
             creationParams: {
                 image: text.image,
