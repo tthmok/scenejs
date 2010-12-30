@@ -42,6 +42,7 @@ SceneJS.createNode({
                     nodes: [
                         {
                             type: "light",
+							id: "target-light",
                             mode:                   "dir",
                             color:                  { r: 1.0, g: 0.5, b: 0.5 },
                             diffuse:                true,
@@ -152,6 +153,34 @@ SceneJS.createNode({
                             targetProperty: "x",
                             keys: [2.5, 3.5, 4.5, 5.5],
                             values: [1.0, 3.0, .1, 1.0],
+                            once: true
+                        },
+						{
+                            type: "interpolator",
+                            mode:"linear",
+                            target: "target-light",
+                            targetProperty: "color",
+                            keys: [2.5, 3.5, 4.5, 5.5],
+                            values: [
+								{ r: 1.0, g: 0.5, b: 0.5 },
+								{ r: 1.0, g: 1.0, b: 1.0 },
+								{ r: 0.0, g: 1.0, b: 0.0 },
+								{ r: 1.0, g: 0.0, b: 0.0 }
+							],
+                            once: true
+                        },
+						{
+                            type: "interpolator",
+                            mode:"linear",
+                            target: "target-light",
+                            targetProperty: "dir",
+                            keys: [5.5, 6.5, 7.5, 8.5],
+                            values: [
+								{ x: -1.0, y: 0.0, z: -1.0 },
+								{ x: -1.0, y: 0.0, z: 1.0 },
+								{ x: -1.0, y: 1.0, z: 0.0 },
+								{ x: 0.0, y: 0.0, z: -1.0 }
+							],
                             once: true
                         }
                     ]
