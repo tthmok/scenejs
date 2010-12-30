@@ -255,8 +255,12 @@ SceneJS.Interpolator.prototype._linearInterpolate = function(k) {
         // If the values are in an object then we must interpolate each of them separately
         w = {};
         for (var valueKey in this._values[this._key1]) {
-            w[valueKey] = this._values[this._key2][valueKey] - this._values[this._key1][valueKey];
-            w[valueKey] = this._values[this._key1][valueKey] + ((v / u) * w[valueKey]);
+            // Ensure key is actual property of the object and not from the prototype
+            if (this._values[this._key1].hasOwnProperty(valueKey)
+                && this._values[this._key2].hasOwnProperty(valueKey)) {
+                w[valueKey] = this._values[this._key2][valueKey] - this._values[this._key1][valueKey];
+                w[valueKey] = this._values[this._key1][valueKey] + ((v / u) * w[valueKey]);
+            }
         }
     }
     return w;
