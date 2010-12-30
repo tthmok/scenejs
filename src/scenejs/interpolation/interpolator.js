@@ -246,8 +246,20 @@ SceneJS.Interpolator.prototype._interpolate = function(k) {
 SceneJS.Interpolator.prototype._linearInterpolate = function(k) {
     var u = this._keys[this._key2] - this._keys[this._key1];
     var v = k - this._keys[this._key1];
-    var w = this._values[this._key2] - this._values[this._key1];
-    return this._values[this._key1] + ((v / u) * w);
+    var w;
+	
+	if ( typeof this._values[this._key1] === 'number') {
+		w = this._values[this._key2] - this._values[this._key1];
+		w = this._values[this._key1] + ((v / u) * w);
+	} else {
+		// If the values are in an object then we must interpolate each of them separately
+		w = {};
+		for (var valueKey in this._values[this._key1]) {
+			w[valueKey] = this._values[this._key2][valueKey] - this._values[this._key1][valueKey];
+			w[valueKey] = this._values[this._key1][valueKey] + ((v / u) * w[valueKey]);
+		}
+	}
+    return w;
 };
 
 // @private
