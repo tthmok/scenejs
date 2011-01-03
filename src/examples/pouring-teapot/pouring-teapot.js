@@ -111,12 +111,12 @@ SceneJS.createNode({
                         },
 
                         /* Interpolator nodes - these can be placed anywhere in the scene graph as long as they
-                        * will be visited during traversal.
-                        *
-                        * Notice their "once" attribute, which indicates that once they have completed their
-                        * interpolation sequences they are to be removed from the scene and destroyed. This is
-                        * handy for injecting fire-and-forget animations into a scene graph.
-                        */
+                         * will be visited during traversal.
+                         *
+                         * Notice their "autoDestroy" attribute, which indicates that once they have completed their
+                         * interpolation sequences they are to be removed from the scene and destroyed. This is
+                         * handy for injecting fire-and-forget animations into a scene graph.
+                         */
                         {
                             type: "interpolator",
                             mode:"linear",
@@ -126,7 +126,7 @@ SceneJS.createNode({
                             // Seconds and values
                             keys: [0.0, 0.4, 1, 1.4, 1.8, 2.0, 5],
                             values: [0.0, 100.0, 150.0, 150.0, 150.0, 0.0, 360],
-                            once: true  // Destroy this node when interpolation finished
+                            autoDestroy: true  // Destroy this node when interpolation finished
                         },
                         {
                             type: "interpolator",
@@ -135,7 +135,7 @@ SceneJS.createNode({
                             targetProperty: "angle",
                             keys: [0.0, 0.4, 1, 1.4, 1.8, 2.0],
                             values: [0.0, 0.0, -50.0, -50.0, 0.0, 0.0],
-                            once: true
+                            autoDestroy: true
                         },
                         {
                             type: "interpolator",
@@ -144,7 +144,8 @@ SceneJS.createNode({
                             targetProperty: "y",
                             keys: [2.0, 3.0, 4.0, 5.0],
                             values: [1.0, 2.0, .3, 1.0],
-                            once: true
+                            autoDestroy: true,
+                            repeat: 3
                         },
                         {
                             type: "interpolator",
@@ -153,7 +154,7 @@ SceneJS.createNode({
                             targetProperty: "x",
                             keys: [2.5, 3.5, 4.5, 5.5],
                             values: [1.0, 3.0, .1, 1.0],
-                            once: true
+                            autoDestroy: true
                         },
                         {
                             type: "interpolator",
@@ -167,7 +168,7 @@ SceneJS.createNode({
                                 { r: 0.0, g: 1.0, b: 0.0 },
                                 { r: 1.0, g: 0.0, b: 0.0 }
                             ],
-                            once: true
+                            autoDestroy: true
                         },
                         {
                             type: "interpolator",
@@ -181,7 +182,7 @@ SceneJS.createNode({
                                 { x: -1.0, y: 1.0, z: 0.0 },
                                 { x: 0.0, y: 0.0, z: -1.0 }
                             ],
-                            once: true
+                            autoDestroy: true
                         }
                     ]
                 }
