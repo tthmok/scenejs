@@ -163,7 +163,7 @@ SceneJS.Interpolator.prototype._render = function(traversalContext) {
     }
     this._update((SceneJS._timeModule.getTime() - this._timeStarted) * 0.001);
 
-    if (this._outputValue != null// Null when interpolation outside of time range 
+    if (this._outputValue != null// Null when interpolation outside of time range
             && SceneJS.nodeExists(this._target)) {
         SceneJS.withNode(this._target).set(this._targetProperty, this._outputValue);
     }
@@ -246,8 +246,24 @@ SceneJS.Interpolator.prototype._interpolate = function(k) {
 SceneJS.Interpolator.prototype._linearInterpolate = function(k) {
     var u = this._keys[this._key2] - this._keys[this._key1];
     var v = k - this._keys[this._key1];
-    var w = this._values[this._key2] - this._values[this._key1];
-    return this._values[this._key1] + ((v / u) * w);
+    var w;
+
+    if ( typeof this._values[this._key1] === 'number') {
+        w = this._values[this._key2] - this._values[this._key1];
+        w = this._values[this._key1] + ((v / u) * w);
+    } else {
+        // If the values are in an object then we must interpolate each of them separately
+        w = {};
+        for (var valueKey in this._values[this._key1]) {
+            // Ensure key is actual property of the object and not from the prototype
+            if (this._values[this._key1].hasOwnProperty(valueKey)
+                && this._values[this._key2].hasOwnProperty(valueKey)) {
+                w[valueKey] = this._values[this._key2][valueKey] - this._values[this._key1][valueKey];
+                w[valueKey] = this._values[this._key1][valueKey] + ((v / u) * w[valueKey]);
+            }
+        }
+    }
+    return w;
 };
 
 // @private
