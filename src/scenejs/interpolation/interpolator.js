@@ -288,9 +288,9 @@ SceneJS.Interpolator.prototype._linearInterpolate = function(k) {
 // @private
 SceneJS.Interpolator.prototype._constantInterpolate = function(k) {
     if (Math.abs((k - this._keys[this._key1])) < Math.abs((k - this._keys[this._key2]))) {
-        return this._keys[this._key1];
+        return this._values[this._key1];
     } else {
-        return this._keys[this._key2];
+        return this._values[this._key2];
     }
 };
 
