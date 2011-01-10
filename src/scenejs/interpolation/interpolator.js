@@ -55,7 +55,7 @@ SceneJS.Interpolator.prototype._init = function(params) {
 
     this._timeStarted = null;
     this._outputValue = null;
-    this._attr._repeat = params.repeat || 1;
+    this._attr.repeat = params.repeat || 1;
 
     /* Whether to remove this node when finished or keep in scene
      */
@@ -200,16 +200,16 @@ SceneJS.Interpolator.prototype._update = function(key) {
             break;                                          // Time delay before interpolation begins
 
         case this.STATE_AFTER:
-            if ( this._attr._repeat > 1 ) {
+            if ( this._attr.repeat > 1 ) {
                 this._resetTime();
                 this._setDirty();
-                this._attr._repeat = this._attr._repeat - 1;
-            } else if ( this._repeat === -1 ) { // repeat forever
+                this._attr.repeat = this._attr.repeat - 1;
+            } else if ( this._attr.repeat === -1 ) { // repeat forever
                 this._resetTime();
                 this._setDirty();
             } else {
-                this._outputValue = null;
-                //this._outputValue = this._values[this._values.length - 1];
+                //this._outputValue = null;
+                this._outputValue = this._attr.values[this._attr.values.length - 1];
                 if (this._attr._autoDestroy) {
                     this.destroy();
                 }
@@ -269,22 +269,22 @@ SceneJS.Interpolator.prototype._interpolate = function(k) {
 
 // @private
 SceneJS.Interpolator.prototype._linearInterpolate = function(k) {
-    var u = this._attr._keys[this._key2] - this._attr._keys[this._key1];
-    var v = k - this._attr._keys[this._key1];
+    var u = this._attr.keys[this._key2] - this._attr.keys[this._key1];
+    var v = k - this._attr.keys[this._key1];
     var w;
 
-    if ( typeof this._attr._values[this._key1] === 'number') {
-        w = this._attr._values[this._key2] - this._attr._values[this._key1];
-        w = this._attr._values[this._key1] + ((v / u) * w);
+    if ( typeof this._attr.values[this._key1] === 'number') {
+        w = this._attr.values[this._key2] - this._attr.values[this._key1];
+        w = this._attr.values[this._key1] + ((v / u) * w);
     } else {
         // If the values are in an object then we must interpolate each of them separately
         w = {};
-        for (var valueKey in this._values[this._key1]) {
+        for (var valueKey in this._attr.values[this._key1]) {
             // Ensure key is actual property of the object and not from the prototype
-            if (this._values[this._key1].hasOwnProperty(valueKey)
-                && this._values[this._key2].hasOwnProperty(valueKey)) {
-                w[valueKey] = this._attr._values[this._key2][valueKey] - this._attr._values[this._key1][valueKey];
-                w[valueKey] = this._attr._values[this._key1][valueKey] + ((v / u) * w[valueKey]);
+            if (this._attr.values[this._key1].hasOwnProperty(valueKey)
+                && this._attr.values[this._key2].hasOwnProperty(valueKey)) {
+                w[valueKey] = this._attr.values[this._key2][valueKey] - this._attr.values[this._key1][valueKey];
+                w[valueKey] = this._attr.values[this._key1][valueKey] + ((v / u) * w[valueKey]);
             }
         }
     }
@@ -293,10 +293,10 @@ SceneJS.Interpolator.prototype._linearInterpolate = function(k) {
 
 // @private
 SceneJS.Interpolator.prototype._constantInterpolate = function(k) {
-    if (Math.abs((k - this._attr._keys[this._key1])) < Math.abs((k - this._attr._keys[this._key2]))) {
-        return this._attr._values[this._key1];
+    if (Math.abs((k - this._attr.keys[this._key1])) < Math.abs((k - this._attr.keys[this._key2]))) {
+        return this._attr.values[this._key1];
     } else {
-        return this._attr._values[this._key2];
+        return this._attr.values[this._key2];
     }
 };
 

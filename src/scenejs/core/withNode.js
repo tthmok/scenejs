@@ -268,6 +268,7 @@ SceneJS._WithNode.prototype.hasAttribute = function(attr) {
         return false;
     }
     return true;
+}
     
 /** Queries some render-time state on the selected node. This is only valid when
  * the node is currently rendering, ie. between "rendering" and "rendered" events.
