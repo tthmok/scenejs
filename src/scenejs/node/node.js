@@ -710,10 +710,22 @@ SceneJS.Node.prototype.removeNode = function(node) {
                     "SceneJS.Node#removeNode - child node not found: " + (node._compile ? ": " + node._attr.id : node)));
 };
 
+/** Removes the specified children nodes
+ * @returns {Array[SceneJS.Node]} The removed child nodes
+ */
+SceneJS.Node.prototype.removeNodes = function(nodes) {
+    var removed = [];
+    for (var i = 0, len = nodes.length; i < len; ++i) {
+        removed.push(this.removeNode(nodes[i]));
+    }
+    this._setDirty();
+    return removed;
+};
+
 /** Removes all child nodes and returns them in an array.
  * @returns {Array[SceneJS.Node]} The removed child nodes
  */
-SceneJS.Node.prototype.removeNodes = function() {
+SceneJS.Node.prototype.removeChildren = function() {
     for (var i = 0; i < this._children.length; i++) {  // Unlink children from this
         if (this._children[i]._parent = null) {
         }
@@ -822,7 +834,7 @@ SceneJS.Node.prototype.insertNode = function(node, i) {
 
         /* Insert node above children when no index given
          */
-        var children = this.removeNodes();
+        var children = this.removeChildren();
 
         /* Move children to right-most leaf of inserted graph
          */
