@@ -134,6 +134,21 @@ SceneJS.createNode({
                                                             type: "teapot"
                                                         }
                                                     ]
+                                                },
+                                                {
+                                                    type: "node",
+                                                    id: "and-me",                                                    
+                                                    nodes: [
+                                                        {
+                                                            type: "translate",
+                                                            y:5,
+                                                            nodes: [
+                                                                {
+                                                                    type: "teapot"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         }
@@ -457,7 +472,7 @@ SceneJS.withNode("teapot1").bind("picked",
  */
 SceneJS.withNode("teapot2").bind("picked",
         function(event) {
-            SceneJS.withNode("remove-from-here").remove("nodes", "remove-me");
+            SceneJS.withNode("remove-from-here").remove("nodes", ["remove-me", "and-me"]);
         });
 
 /* Move teapot 3 to it's alternative material parent when picked
