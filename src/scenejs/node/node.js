@@ -711,6 +711,7 @@ SceneJS.Node.prototype.removeNode = function(node) {
 };
 
 /** Removes the specified children nodes
+ * @param {Array[String | SceneJS.Node]} Array of the target child nodes, or their IDs
  * @returns {Array[SceneJS.Node]} The removed child nodes
  */
 SceneJS.Node.prototype.removeNodes = function(nodes) {
